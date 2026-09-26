@@ -1,0 +1,27 @@
+// use prisma-8
+
+model User {
+  id           BigInt           @id
+  balanceCents BigInt           @map("balance_cents")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    temporal.updatedAt() @map("updated_at")
+  history      BalanceHistory[]
+
+  @@map("users")
+}
+
+model BalanceHistory {
+  id                 Uuid     @id @default(uuid())
+  userId             BigInt   @map("user_id")
+  action             String
+  amountCents        BigInt   @map("amount_cents")
+  balanceBeforeCents BigInt   @map("balance_before_cents")
+  balanceAfterCents  BigInt   @map("balance_after_cents")
+  idempotencyKey     String?  @map("idempotency_key")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("balance_history")
+}
